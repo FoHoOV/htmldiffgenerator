@@ -1,6 +1,9 @@
-import os, difflib
-from datetime import datetime, timezone
-from diff_generator.file_utils.utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file
+# this generates a html patch file based on commit1 and commit2 folders
+
+import difflib
+from datetime import datetime
+
+from file_manager_utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file
 
 
 def is_file_changed(diff: str) -> bool:
@@ -17,8 +20,7 @@ def get_changeset_names(folder1_path: str, folder2_path: str) -> str:
 
 
 def generate_html_diff_folders(folder1_path: str, folder2_path: str, extensions: list[str], just_context: bool = True, context_lines: int = 5):
-    base_output_folder_path = get_changeset_names(folder1_path, folder2_path)
-    print(base_output_folder_path)
+    base_output_folder_path = get_changeset_names(folder1_path, folder2_path) + "--" + datetime.utcnow().strftime('%Y-%m-%d--%H_%M_%S.%F')[:-3]
     for file1_path in get_all_file_paths_recursive(folder1_path, extensions):
         diff = generate_html_diff_files(get_file_path("", file1_path),
                                         get_file_path("",

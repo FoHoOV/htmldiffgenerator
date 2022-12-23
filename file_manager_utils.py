@@ -1,7 +1,6 @@
 import dataclasses
 import os
 import zipfile
-from pathlib import Path
 
 
 def get_file_path(path: str, file_name: str, absolute: bool = False) -> str:
@@ -60,7 +59,7 @@ def _file_has_extension(file_name: str, extensions: list[str]) -> bool:
     if len(extensions) == 0:
         return True
     for extension in extensions:
-        if file_name.endswith(extension):
+        if extension == "*" or file_name.endswith(extension):
             return True
     return False
 
