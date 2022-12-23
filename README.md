@@ -27,6 +27,8 @@ c1 is considered the old commit and c2 is considered the new commit
             run diff_generator -h for available commands
         </li>
 </ol>
-which will generate the output to '[this-project-root]/output'
+which will generate the output to '[this-project-root]/output'.
 
-I know that this code is NOT well structured. It is written in a very short time just to get my job done faster.
+* --output arg might result into FileNotFound exceptions and that's because of the antivirus program. If that's the case just don't use this arg or 
+allow this program in the ransomware protection exceptions.
+* I know that this code is NOT well structured. It is written in a very short time just to get my job done faster.
