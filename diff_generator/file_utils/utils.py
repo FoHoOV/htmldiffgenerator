@@ -19,7 +19,9 @@ def write_to_file(content: str, file_name: str, path: str = ""):
     dirname = os.path.dirname(file_path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
-    with open(get_file_path(path, file_name), mode="w", encoding="utf-8") as file:
+
+    print(f"writing to: {file_path}")
+    with open(file_path, mode="w", encoding="utf-8") as file:
         file.write(content)
 
 
@@ -27,7 +29,10 @@ def write_to_file(content: str, file_name: str, path: str = ""):
 def decompress(file_name: str, path: str = "") -> str:
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
-    extraction_path = extraction_path[0:extraction_path.rfind("/")] + "/extracted-" + extraction_path[extraction_path.rfind("/") + 1:]
+    extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:]
+    dirname = os.path.dirname(extraction_path)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
     return extraction_path
