@@ -8,6 +8,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-jc", action="store_true", default=True, help="Produce a context format diff (default)")
     parser.add_argument("-cl", action="store_true", default=5, help="How many context lines are included")
+    parser.add_argument("-ex",
+                        action="store_true",
+                        default=[".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj"])
     parser.add_argument("-s", action="store_true", help="you azure devops session id after login")
     parser.add_argument("-c1", action="store_true", help="change set 1 zip download url")
     parser.add_argument("-c2", action="store_true", help="change set 2 zip download url")

@@ -1,7 +1,7 @@
 import os, difflib
 from datetime import datetime, timezone
 
-from diff_generator.file_utils.utils import read_file
+from diff_generator.file_utils.utils import read_file, get_all_file_paths_recursive
 
 
 def file_mtime(path: str) -> str:
@@ -10,8 +10,9 @@ def file_mtime(path: str) -> str:
     return t.astimezone().isoformat()
 
 
-def generate_html_diff_folders(folder1_path: str, folder2_path: str, just_context: bool = True, context_lines: int = 5):
-    pass
+def generate_html_diff_folders(folder1_path: str, folder2_path: str, extensions: list[str], just_context: bool = True, context_lines: int = 5):
+    for file1_path in get_all_file_paths_recursive(folder1_path, extensions):
+        pass
 
 
 def generate_html_diff_files(file1_path: str, file2_path: str, just_context: bool = True, context_lines: int = 5) -> str:

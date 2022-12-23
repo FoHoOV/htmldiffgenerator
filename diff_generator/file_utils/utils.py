@@ -16,7 +16,7 @@ def write_to_file(content: str, file_name: str, path: str = ""):
 
 
 # returns the extracted file output path
-def decompress(file_name: str, path: str = "")->str:
+def decompress(file_name: str, path: str = "") -> str:
     extraction_path = "extracted-" + get_file_path(path, file_name)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
@@ -54,3 +54,11 @@ def read_all_files_recursive(root_path: str, extension: list[str]) -> list[Resul
                 results.append(Result(file_path, read_file(file_path)))
 
     return results
+
+
+def get_all_file_paths_recursive(root_path: str, extension: list[str]) -> str:
+    for current_dir_path, current_subdirs, current_files in os.walk(root_path):
+        for file_name in current_files:
+            if _file_has_extension(file_name, extension):
+                file_path = str(os.path.join(current_dir_path, file_name))
+                yield file_path
