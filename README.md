@@ -7,7 +7,7 @@ generates an html diff like winmerge->generate patch/diff for two .zip files tha
 </h1>
 
 <code>
-    python diff_generator.py --c1 "path_to_file1.zip" --c2 "path_to_file2.zip"\
+    python diff_generator.py --c1 "path_to_file1.zip" --c2 "path_to_file2.zip"
 </code>
 
 c1 is considered the old commit and c2 is considered the new commit
