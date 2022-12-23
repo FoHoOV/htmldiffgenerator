@@ -25,9 +25,14 @@ def decompress(file_name: str, path: str = "") -> str:
 
 # if path == "" then we expect that file_name is the relative/abs path
 # otherwise it should be the file_name only and path is appended to it
-def read_file(file_name: str, path: str = "") -> str:
-    with open(get_file_path(path, file_name), mode="r", encoding="utf-8") as file:
-        return str.join("", file.readlines())
+def read_file(file_name: str, path: str = "", default: str = None) -> str:
+    try:
+        with open(get_file_path(path, file_name), mode="r", encoding="utf-8") as file:
+            return str.join("", file.readlines())
+    except FileNotFoundError as e:
+        if default is not None:
+            return default
+        raise e
 
 
 @dataclasses.dataclass
