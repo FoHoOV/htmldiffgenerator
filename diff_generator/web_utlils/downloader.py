@@ -1,7 +1,7 @@
 import requests
 from werkzeug.utils import secure_filename
 
-from diff_generator.file_utils.utils import decompress
+from diff_generator.file_utils.utils import decompress, get_file_path
 
 
 # returns the output file path
@@ -14,4 +14,4 @@ def download_file(url: str) -> str:
                 f.write(chunk)
 
     decompress(file_path)
-    return file_path
+    return get_file_path("", file_path)

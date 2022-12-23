@@ -1,6 +1,8 @@
 import argparse
 
-from diff_generator.difflib.difflib_html_generator import generate_html_diff_folders
+from diff_generator import file_utils
+from diff_generator.difflib_utils.difflib_html_generator import generate_html_diff_folders
+from diff_generator.file_utils.utils import decompress
 from diff_generator.web_utlils.downloader import download_file
 
 
@@ -11,16 +13,18 @@ def main():
     parser.add_argument("-ex",
                         action="store_true",
                         default=[".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj"])
-    parser.add_argument("-s", action="store_true", help="you azure devops session id after login")
-    parser.add_argument("-c1", action="store_true", help="change set 1 zip download url")
-    parser.add_argument("-c2", action="store_true", help="change set 2 zip download url")
-    parser.add_argument("root_dir")
+    # parser.add_argument("-s", action="store_true", help="you azure devops session id after login")
+    # parser.add_argument("-c1", action="store_true", help="change set 1 zip download url")
+    # parser.add_argument("-c2", action="store_true", help="change set 2 zip download url")
     options = parser.parse_args()
 
-    path_c1 = download_file(options.c1)
-    path_c2 = download_file(options.c2)
+    # path_c1 = download_file(options.c1)
+    # path_c2 = download_file(options.c2)
 
-    generate_html_diff_folders(path_c1, path_c2, options.jc, options.cl)
+    path_c1 = decompress("./changesets/c1.zip")
+    path_c2 = decompress("./changesets/c2.zip")
+
+    generate_html_diff_folders(path_c1, path_c2, options.ex, options.jc, options.cl)
 
 
 if __name__ == "__main__":
