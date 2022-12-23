@@ -5,7 +5,6 @@ generates an html diff like winmerge->generate patch/diff for two .zip files tha
 <h1>
     how to use:
 </h1>
-
 <code>
     python diff_generator.py --c1 "path_to_file1.zip" --c2 "path_to_file2.zip"
 </code>
