@@ -14,8 +14,8 @@ def generate_diffs():
                         default=[".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj"])
     parser.add_argument("--eex",
                         type=list[str],
-                        help='extensions that we dont search for (default = [".designer.vb", ".designer.cs", ".dll"])',
-                        default=[".designer.vb", ".designer.cs", ".dll"])
+                        help='extensions that we dont search for (default = [".designer.vb", ".designer.cs", ".dll", ".pdb"])',
+                        default=[".designer.vb", ".designer.cs", ".dll", ".pdb"])
     parser.add_argument("--c1",
                         type=str,
                         required=True,
@@ -35,6 +35,11 @@ def generate_diffs():
                         default=False,
                         help="dont decompress commit 2")
 
+    parser.add_argument("--ww",
+                        action=argparse.BooleanOptionalAction,
+                        default=False,
+                        help="word wrap")
+
     parser.add_argument("--output",
                         default="./output",
                         help="output path")
@@ -50,7 +55,8 @@ def generate_diffs():
     if path_c2.endswith(".zip"):
         raise Exception("c2 ended with '.zip' when dont compress for c2 flag was turned on")
 
-    generate_html_diff_folders(path_c1, path_c2, options.ex,options.eex, options.output, options.jc, options.cl)
+    generate_html_diff_folders(path_c1, path_c2, options.ex, options.eex, options.output, options.jc, options.cl,
+                               options.ww)
 
 
 if __name__ == "__main__":

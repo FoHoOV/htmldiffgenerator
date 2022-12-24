@@ -35,15 +35,26 @@ def decompress(file_name: str, path: str = "") -> str:
         os.makedirs(dirname)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
-    print(f"extraction done for: {file_name}")
+    print(f"extracted to: {extraction_path}")
     return extraction_path
 
 
 # if path == "" then we expect that file_name is the relative/abs path
 # otherwise it should be the file_name only and path is appended to it
-def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True) -> str:
+def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True) -> str | list[str]:
+    file_path = get_file_path(path, file_name)
     try:
-        with open(get_file_path(path, file_name), mode="r", encoding="utf-8") as file:
+        return read_file_with_unicode(file_path, "utf-8", default, as_str)
+    except UnicodeDecodeError as e1:
+        try:
+            return read_file_with_unicode(file_path, "utf-16-be", default, as_str)
+        except UnicodeDecodeError as e2:
+            return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
+
+
+def read_file_with_unicode(file_path: str, encoding: str, default: str = None, as_str: bool = True) -> str | list[str]:
+    try:
+        with open(file_path, mode="r", encoding=encoding) as file:
             return str.join("\n", file.readlines()) if as_str else file.readlines()
     except FileNotFoundError as e:
         if default is not None:
