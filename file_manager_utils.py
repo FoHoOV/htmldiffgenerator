@@ -55,29 +55,33 @@ class Result:
     content: str
 
 
-def _file_has_extension(file_name: str, extensions: list[str]) -> bool:
-    if len(extensions) == 0:
+def _file_has_extension(file_name: str, included_extensions: list[str], excluded_extensions: list[str]) -> bool:
+    if len(included_extensions) == 0:
         return True
-    for extension in extensions:
+    for extension in included_extensions:
         if extension == "*" or file_name.endswith(extension):
+            for excluded_extension in excluded_extensions:
+                if file_name.endswith(excluded_extension):
+                    return False
             return True
     return False
 
 
-def read_all_files_recursive(root_path: str, extension: list[str]) -> list[Result]:
+def read_all_files_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> list[
+    Result]:
     results = []
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
         for file_name in current_files:
-            if _file_has_extension(file_name, extension):
+            if _file_has_extension(file_name, included_extension, excluded_extensions):
                 file_path = str(os.path.join(current_dir_path, file_name))
                 results.append(Result(file_path, read_file(file_path)))
 
     return results
 
 
-def get_all_file_paths_recursive(root_path: str, extension: list[str]) -> str:
+def get_all_file_paths_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> str:
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
         for file_name in current_files:
-            if _file_has_extension(file_name, extension):
+            if _file_has_extension(file_name, included_extension, excluded_extensions):
                 file_path = str(os.path.join(current_dir_path, file_name))
                 yield file_path
