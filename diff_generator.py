@@ -50,7 +50,7 @@ def generate_diffs():
     if path_c2.endswith(".zip"):
         raise Exception("c2 ended with '.zip' when dont compress for c2 flag was turned on")
 
-    generate_html_diff_folders(path_c1, path_c2, options.ex, options.output, options.jc, options.cl)
+    generate_html_diff_folders(path_c1, path_c2, options.ex,options.eex, options.output, options.jc, options.cl)
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ def write_to_file(content: str, file_name: str, path: str = ""):
 
 # returns the extracted file output path
 def decompress(file_name: str, path: str = "") -> str:
+    print(f"extracting: {file_name}")
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
     extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:]
@@ -34,6 +35,7 @@ def decompress(file_name: str, path: str = "") -> str:
         os.makedirs(dirname)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
+    print(f"extraction done for: {file_name}")
     return extraction_path
 
 
