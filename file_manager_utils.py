@@ -26,6 +26,7 @@ def write_to_file(content: str, file_name: str, path: str = ""):
 
 # returns the extracted file output path
 def decompress(file_name: str, path: str = "") -> str:
+    print(f"extracting: {file_name}")
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
     extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:]
@@ -34,14 +35,26 @@ def decompress(file_name: str, path: str = "") -> str:
         os.makedirs(dirname)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
+    print(f"extracted to: {extraction_path}")
     return extraction_path
 
 
 # if path == "" then we expect that file_name is the relative/abs path
 # otherwise it should be the file_name only and path is appended to it
-def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True) -> str:
+def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True) -> str | list[str]:
+    file_path = get_file_path(path, file_name)
     try:
-        with open(get_file_path(path, file_name), mode="r", encoding="utf-8") as file:
+        return read_file_with_unicode(file_path, "utf-8", default, as_str)
+    except UnicodeDecodeError as e1:
+        try:
+            return read_file_with_unicode(file_path, "utf-16-be", default, as_str)
+        except UnicodeDecodeError as e2:
+            return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
+
+
+def read_file_with_unicode(file_path: str, encoding: str, default: str = None, as_str: bool = True) -> str | list[str]:
+    try:
+        with open(file_path, mode="r", encoding=encoding) as file:
             return str.join("\n", file.readlines()) if as_str else file.readlines()
     except FileNotFoundError as e:
         if default is not None:
@@ -55,29 +68,33 @@ class Result:
     content: str
 
 
-def _file_has_extension(file_name: str, extensions: list[str]) -> bool:
-    if len(extensions) == 0:
+def _file_has_extension(file_name: str, included_extensions: list[str], excluded_extensions: list[str]) -> bool:
+    if len(included_extensions) == 0:
         return True
-    for extension in extensions:
+    for extension in included_extensions:
         if extension == "*" or file_name.endswith(extension):
+            for excluded_extension in excluded_extensions:
+                if file_name.endswith(excluded_extension):
+                    return False
             return True
     return False
 
 
-def read_all_files_recursive(root_path: str, extension: list[str]) -> list[Result]:
+def read_all_files_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> list[
+    Result]:
     results = []
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
         for file_name in current_files:
-            if _file_has_extension(file_name, extension):
+            if _file_has_extension(file_name, included_extension, excluded_extensions):
                 file_path = str(os.path.join(current_dir_path, file_name))
                 results.append(Result(file_path, read_file(file_path)))
 
     return results
 
 
-def get_all_file_paths_recursive(root_path: str, extension: list[str]) -> str:
+def get_all_file_paths_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> str:
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
         for file_name in current_files:
-            if _file_has_extension(file_name, extension):
+            if _file_has_extension(file_name, included_extension, excluded_extensions):
                 file_path = str(os.path.join(current_dir_path, file_name))
                 yield file_path
