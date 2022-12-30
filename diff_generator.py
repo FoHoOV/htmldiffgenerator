@@ -51,14 +51,18 @@ def generate_diffs():
 
     options = parser.parse_args()
 
+    if options.c1.endswith(".zip") and options.ddc1:
+        raise Exception("c1 ended with '.zip' when --ddc1 flag was turned on")
+    elif not options.c1.endswith(".zip") and not options.ddc1:
+        raise Exception("c1 is not a zip file when --ddc1 flag was not used")
+
+    if options.c2.endswith(".zip") and options.ddc2:
+        raise Exception("c2 ended with '.zip' when --ddc2 flag was turned on")
+    elif not options.c2.endswith(".zip") and not options.ddc2:
+        raise Exception("c2 is not a zip file when --ddc2 flag was not used")
+
     path_c1 = decompress(options.c1, options.git) if not options.ddc1 else options.c1
     path_c2 = decompress(options.c2, options.git) if not options.ddc2 else options.c2
-
-    if path_c1.endswith(".zip"):
-        raise Exception("c1 ended with '.zip' when dont compress for c1 flag was turned on")
-
-    if path_c2.endswith(".zip"):
-        raise Exception("c2 ended with '.zip' when dont compress for c2 flag was turned on")
 
     generate_html_diff_folders(path_c1, path_c2, options.ex, options.eex, options.output, options.jc, options.cl,
                                options.ww)
