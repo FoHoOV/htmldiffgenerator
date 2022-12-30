@@ -6,8 +6,8 @@ from html_patch_generator import generate_html_diff_folders
 
 def generate_diffs():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--jc", type=bool, default=True, help="Produce a context format diff (default)")
-    parser.add_argument("--cl", default=5, help="How many context lines are included")
+    parser.add_argument("--jc", type=bool, default=True, help="Produce a context format diff (default = True)")
+    parser.add_argument("--cl", default=5, help="How many context lines you want to be included (default = 5)")
     parser.add_argument("--ex",
                         type=list[str],
                         help='extensions that we search for(use "*" for all extensions the default) default = [".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj"]',
@@ -19,30 +19,30 @@ def generate_diffs():
     parser.add_argument("--c1",
                         type=str,
                         required=True,
-                        help="first downloaded changeset zip archive path")
+                        help="first downloaded changeset/commit zip archive path")
     parser.add_argument("--c2",
                         type=str,
                         required=True,
-                        help="second downloaded changeset zip archive path")
+                        help="second downloaded changeset/commit zip archive path")
 
     parser.add_argument("--ddc1",
                         action=argparse.BooleanOptionalAction,
                         default=False,
-                        help="dont decompress commit 1 (use this if it's not a zip file)")
+                        help="dont decompress changeset1/commit1 (use this if it's not a zip file)")
 
     parser.add_argument("--ddc2",
                         action=argparse.BooleanOptionalAction,
                         default=False,
-                        help="dont decompress commit 2 (use this if it's not a zip file)")
+                        help="dont decompress changeset2/commit2 (use this if it's not a zip file)")
 
     parser.add_argument("--ww",
                         action=argparse.BooleanOptionalAction,
-                        default=False,
-                        help="word wrap")
+                        default=True,
+                        help="use word wrap (wraps the generated diff to 90 characters per line)")
 
     parser.add_argument("--output",
                         default="./output",
-                        help="output path")
+                        help="output path (default= ./output)")
 
     parser.add_argument("--git",
                         action=argparse.BooleanOptionalAction,

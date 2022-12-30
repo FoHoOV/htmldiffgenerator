@@ -2,6 +2,7 @@ import dataclasses
 import os
 import shutil
 import zipfile
+from datetime import datetime
 
 
 def get_file_path(path: str, file_name: str, absolute: bool = False) -> str:
@@ -44,14 +45,15 @@ def decompress(file_name: str, is_git: bool, path: str = "") -> str:
     print(f"extracting: {file_name}")
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
-    extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:]
+    extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:] + "--" + datetime.utcnow().strftime(
+        '%Y-%m-%d--%H_%M_%S.%F')[:-3]
     dirname = os.path.dirname(extraction_path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
-    if is_git:
-        move_folder_contents(os.path.join(extraction_path, os.listdir(extraction_path)[0]), extraction_path)
+        if is_git:
+            move_folder_contents(os.path.join(extraction_path, zip_ref.filelist[0].filename), extraction_path)
     print(f"extracted to: {extraction_path}")
     return extraction_path
 
