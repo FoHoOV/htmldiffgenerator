@@ -28,6 +28,9 @@ c1 is considered the old commit and c2 is considered the new commit
 </ol>
 which will generate the output to '[this-project-root]/output'.
 
-* --output arg might result into FileNotFound exceptions and that's because of the antivirus program. If that's the case just don't use this arg or 
-allow this program in the ransomware protection exceptions.
+* use the --git flag if you are downloading zip files from git not azure (I default to azure). This flag is used to tell this program to
+  move every thing from the root of the extracted folder one directory up, since github also inclues the commit hash in the extracted folder which
+  marks everything as different.
+* --output arg might result into FileNotFound exceptions and that's because of the antivirus program. If that's the case just don't use this arg
+  or allow this program in the ransomware protection exceptions.
 * I know that this code is NOT well structured. It is written in a very short time just to get my job done faster.

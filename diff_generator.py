@@ -28,12 +28,12 @@ def generate_diffs():
     parser.add_argument("--ddc1",
                         action=argparse.BooleanOptionalAction,
                         default=False,
-                        help="dont decompress commit 1")
+                        help="dont decompress commit 1 (use this if it's not a zip file)")
 
     parser.add_argument("--ddc2",
                         action=argparse.BooleanOptionalAction,
                         default=False,
-                        help="dont decompress commit 2")
+                        help="dont decompress commit 2 (use this if it's not a zip file)")
 
     parser.add_argument("--ww",
                         action=argparse.BooleanOptionalAction,
@@ -44,10 +44,15 @@ def generate_diffs():
                         default="./output",
                         help="output path")
 
+    parser.add_argument("--git",
+                        action=argparse.BooleanOptionalAction,
+                        default=False,
+                        help="help if the zip is download from git use this flag(we default to azure file structure)")
+
     options = parser.parse_args()
 
-    path_c1 = decompress(options.c1) if not options.ddc1 else options.c1
-    path_c2 = decompress(options.c2) if not options.ddc2 else options.c2
+    path_c1 = decompress(options.c1, options.git) if not options.ddc1 else options.c1
+    path_c2 = decompress(options.c2, options.git) if not options.ddc2 else options.c2
 
     if path_c1.endswith(".zip"):
         raise Exception("c1 ended with '.zip' when dont compress for c1 flag was turned on")

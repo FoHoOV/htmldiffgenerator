@@ -1,5 +1,6 @@
 import dataclasses
 import os
+import shutil
 import zipfile
 
 
@@ -24,8 +25,22 @@ def write_to_file(content: str, file_name: str, path: str = ""):
         file.write(content)
 
 
+def move_folder_contents(source_path: str, dest_path: str):
+    file_names = os.listdir(source_path)
+    for file_name in file_names:
+        shutil.move(os.path.join(source_path, file_name), dest_path)
+    try:
+        os.rmdir(source_path)
+    except(FileNotFoundError, OSError) as e:
+        raise f"We tried to move all contents from {source_path} one directory up (might be due to using the --git flag)" \
+              f"but this folder still had some contents after the move. If this error exists just extract the files yourself" \
+              f"and use the --ddc1 and --ddc2 flags"
+
+
 # returns the extracted file output path
-def decompress(file_name: str, path: str = "") -> str:
+# if is_git flag is set then we move all files within the extracted folder, one folder up since
+# git includes the commit hash as well, which makes this program think all files are different
+def decompress(file_name: str, is_git: bool, path: str = "") -> str:
     print(f"extracting: {file_name}")
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
@@ -35,6 +50,8 @@ def decompress(file_name: str, path: str = "") -> str:
         os.makedirs(dirname)
     with zipfile.ZipFile(get_file_path(path, file_name), 'r') as zip_ref:
         zip_ref.extractall(extraction_path)
+    if is_git:
+        move_folder_contents(os.path.join(extraction_path, os.listdir(extraction_path)[0]), extraction_path)
     print(f"extracted to: {extraction_path}")
     return extraction_path
 
