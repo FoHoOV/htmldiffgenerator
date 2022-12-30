@@ -87,7 +87,10 @@ def read_file(file_name: str, path: str = "", default: str = None, as_str: bool 
         try:
             return read_file_with_unicode(file_path, "utf-16-be", default, as_str)
         except UnicodeDecodeError as e2:
-            return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
+            try:
+                return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
+            except UnicodeDecodeError as e3:
+                raise f"we tried utf-8, utf-16-be and utf-16-le but none of them worked :(\n{e3.reason}"
 
 
 def read_file_with_unicode(file_path: str, encoding: str, default: str = None, as_str: bool = True) -> str | list[str]:
