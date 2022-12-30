@@ -28,7 +28,7 @@ c1 is considered the old commit and c2 is considered the new commit
 </ol>
 which will generate the output to '[this-project-root]/output'.
 
-* <h3>use the --git flag if you are downloading zip files from git not azure (I default to azure). This flag is used to tell this program to
+* <h3>use the --git flag if you are downloading zip files from github not azure (I default to azure). This flag is used to tell this program to
   move every thing from the root of the extracted folder one directory up, since github also inclues the commit hash in the extracted folder which
   marks everything as different.
   </h3>
