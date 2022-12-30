@@ -28,18 +28,22 @@ def write_to_file(content: str, file_name: str, path: str = ""):
         file.write(content)
 
 
-def get_changeset_names(folder1_path: str, folder2_path: str) -> str:
-    folder1_path = folder1_path.replace("./", "").replace("extracted-", "")
-    folder2_path = folder2_path.replace("./", "").replace("extracted-", "")
-    return folder1_path[folder1_path.rfind("/") + 1:] + "--" + folder2_path[folder2_path.find("/") + 1:]
-
-
 def generate_output_path(folder1_path: str, folder2_path: str) -> str:
-    return secure_filename(get_changeset_names(folder1_path, folder2_path) + "--" + generate_timestamp())
+    folder1_path = get_file_path(folder1_path, "")
+    folder2_path = get_file_path(folder2_path, "")
+    if folder1_path.endswith("/"):
+        folder1_path = folder1_path[0:len(folder1_path) - 1]
+    if folder2_path.endswith("/"):
+        folder2_path = folder2_path[0:len(folder2_path) - 1]
+    return secure_filename(folder1_path.split("/")[-1] +
+                           "--" +
+                           folder2_path.split("/")[-1] +
+                           "--" +
+                           generate_timestamp())
 
 
 def generate_timestamp() -> str:
-    return datetime.utcnow().strftime('%Y-%m-%d--%H_%M_%S.%F')[:-3]
+    return datetime.now().strftime('%Y-%m-%d--%H_%M_%S.%F')[:-3]
 
 
 def move_folder_contents(source_path: str, dest_path: str):
