@@ -3,7 +3,9 @@
 import difflib
 from datetime import datetime
 
-from file_manager_utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file
+from werkzeug.utils import secure_filename
+
+from file_manager_utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file, generate_output_path
 
 
 def is_file_changed(diff: str) -> bool:
@@ -11,12 +13,6 @@ def is_file_changed(diff: str) -> bool:
     if first_occurrence > -1:
         return diff.find("<td>&nbsp;No Differences Found&nbsp;</td>", first_occurrence) < 0
     return True
-
-
-def get_changeset_names(folder1_path: str, folder2_path: str) -> str:
-    folder1_path = folder1_path.replace("./", "").replace("extracted-", "")
-    folder2_path = folder2_path.replace("./", "").replace("extracted-", "")
-    return folder1_path[folder1_path.rfind("/") + 1:] + "--" + folder2_path[folder2_path.find("/") + 1:]
 
 
 def generate_html_diff_folders(folder1_path: str,
@@ -27,8 +23,7 @@ def generate_html_diff_folders(folder1_path: str,
                                just_context: bool = True,
                                context_lines: int = 5,
                                word_wrap:bool=False):
-    base_output_folder_path = get_changeset_names(folder1_path, folder2_path) + "--" + datetime.utcnow().strftime(
-        '%Y-%m-%d--%H_%M_%S.%F')[:-3]
+    base_output_folder_path = generate_output_path(folder1_path,folder2_path)
     for file1_path in get_all_file_paths_recursive(folder1_path, included_extensions, excluded_extensions):
         diff = generate_html_diff_files(get_file_path("", file1_path),
                                         get_file_path("", file1_path.replace(folder1_path, folder2_path)),
