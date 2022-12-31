@@ -38,7 +38,7 @@ def generate_diffs():
     parser.add_argument("--ww",
                         action=argparse.BooleanOptionalAction,
                         default=True,
-                        help="use word wrap (wraps the generated diff to 90 characters per line)")
+                        help="use word wrap (wraps the generated diff to 90 characters per line for each side)")
 
     parser.add_argument("--output",
                         default="./output",
@@ -47,7 +47,7 @@ def generate_diffs():
     parser.add_argument("--git",
                         action=argparse.BooleanOptionalAction,
                         default=False,
-                        help="help if the zip is download from git use this flag(we default to azure file structure)")
+                        help="enable this flag if the downloaded zips come from github(we default to azure file structure)")
 
     options = parser.parse_args()
 
