@@ -1,9 +1,6 @@
 # this generates a html patch file based on commit1 and commit2 folders
 
 import difflib
-from datetime import datetime
-
-from werkzeug.utils import secure_filename
 
 from file_manager_utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file, generate_output_path
 
@@ -22,8 +19,8 @@ def generate_html_diff_folders(folder1_path: str,
                                output_path: str,
                                just_context: bool = True,
                                context_lines: int = 5,
-                               word_wrap:bool=False):
-    base_output_folder_path = generate_output_path(folder1_path,folder2_path)
+                               word_wrap: bool = False):
+    base_output_folder_path = generate_output_path(folder1_path, folder2_path)
     for file1_path in get_all_file_paths_recursive(folder1_path, included_extensions, excluded_extensions):
         diff = generate_html_diff_files(get_file_path("", file1_path),
                                         get_file_path("", file1_path.replace(folder1_path, folder2_path)),
@@ -35,7 +32,10 @@ def generate_html_diff_folders(folder1_path: str,
             continue
 
         file1_path = file1_path.replace("./", "")
-        file1_path = file1_path[file1_path.find('\\', file1_path.find("extracted-")):]
+        new_path_starting_index = file1_path.find("extracted-")
+        if new_path_starting_index == -1:  # because this can be a not extracted file
+            new_path_starting_index = 0
+        file1_path = file1_path[file1_path.find('\\', new_path_starting_index):]
         write_to_file(diff,
                       get_file_path("", output_path,
                                     absolute=True) + "/" + base_output_folder_path + file1_path + ".diff.html")
