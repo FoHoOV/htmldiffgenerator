@@ -17,15 +17,24 @@ def get_file_path(path: str, file_name: str, absolute: bool = False) -> str:
     return file_path
 
 
-def write_to_file(content: str, file_name: str, path: str = ""):
+def write_to_file(content: str, file_name: str, path: str = "", retry: bool = True):
     file_path = get_file_path(path, file_name)
     dirname = os.path.dirname(file_path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
     print(f"writing to: {file_path}")
-    with open(file_path, mode="w", encoding="utf-8") as file:
-        file.write(content)
+    try:
+        with open(file_path, mode="w+", encoding="utf-8") as file:
+            file.write(content)
+    except FileNotFoundError as e:
+        print(f"****couldn't write to: {file_path}, error= {str(e)}")
+        if retry:
+            print("retrying--------")
+            write_to_file(content, file_name, path, False)
+        else:
+            print("if you are using windows read this article: https://docs.python.org/3/using/windows.html#:~:text=Windows%20historically%20has%20limited%20path,expanded%20to%20approximately%2032%2C000%20characters.")
+            print("^^^^^^^^^^^^^^^^^^^^^^^")
 
 
 def generate_output_path(folder1_path: str, folder2_path: str) -> str:
@@ -65,7 +74,8 @@ def decompress(file_name: str, is_git: bool, path: str = "") -> str:
     print(f"extracting: {file_name}")
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
-    extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:] + "--" + generate_timestamp()
+    extraction_path = "changesets/extracted-" + extraction_path[
+                                                extraction_path.rfind("/") + 1:] + "--" + generate_timestamp()
     dirname = os.path.dirname(extraction_path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
