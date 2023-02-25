@@ -21,5 +21,5 @@ def download_file(url: str, session: str) -> str:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
 
-    decompress(file_path)
+    # decompress(file_path,Fakse)
     return get_file_path("", file_path)

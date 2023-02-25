@@ -2,7 +2,8 @@
 
 import difflib
 
-from file_manager_utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file, generate_output_path
+from file_manager_utils import get_all_file_paths_recursive, write_to_file, get_file_path, read_file, \
+    generate_output_path
 
 
 def is_file_changed(diff: str) -> bool:
@@ -14,6 +15,7 @@ def is_file_changed(diff: str) -> bool:
 
 def generate_html_diff_folders(folder1_path: str,
                                folder2_path: str,
+                               ignored_paths: list[str],
                                included_extensions: list[str],
                                excluded_extensions: list[str],
                                output_path: str,
@@ -21,7 +23,10 @@ def generate_html_diff_folders(folder1_path: str,
                                context_lines: int = 5,
                                word_wrap: bool = False):
     base_output_folder_path = generate_output_path(folder1_path, folder2_path)
-    for file1_path in get_all_file_paths_recursive(folder1_path, included_extensions, excluded_extensions):
+    for file1_path in get_all_file_paths_recursive(folder1_path,
+                                                   ignored_paths,
+                                                   included_extensions,
+                                                   excluded_extensions):
         diff = generate_html_diff_files(get_file_path("", file1_path),
                                         get_file_path("", file1_path.replace(folder1_path, folder2_path)),
                                         just_context,

@@ -1,5 +1,6 @@
 import dataclasses
 import os
+import re
 import shutil
 import zipfile
 from datetime import datetime
@@ -33,7 +34,8 @@ def write_to_file(content: str, file_name: str, path: str = "", retry: bool = Tr
             print("retrying--------")
             write_to_file(content, file_name, path, False)
         else:
-            print("if you are using windows read this article: https://docs.python.org/3/using/windows.html#:~:text=Windows%20historically%20has%20limited%20path,expanded%20to%20approximately%2032%2C000%20characters.")
+            print(
+                "if you are using windows read this article: https://docs.python.org/3/using/windows.html#:~:text=Windows%20historically%20has%20limited%20path,expanded%20to%20approximately%2032%2C000%20characters.")
             print("^^^^^^^^^^^^^^^^^^^^^^^")
 
 
@@ -62,9 +64,10 @@ def move_folder_contents(source_path: str, dest_path: str):
     try:
         os.rmdir(source_path)
     except(FileNotFoundError, OSError) as e:
-        raise f"We tried to move all contents from {source_path} one directory up (might be due to using the --git flag)" \
-              f"but this folder still had some contents after the move. If this error exists just extract the files yourself" \
-              f"and use the --ddc1 and --ddc2 flags"
+        raise Exception(
+            f"We tried to move all contents from {source_path} one directory up (might be due to using the --git flag)" \
+            f"but this folder still had some contents after the move. If this error exists just extract the files yourself" \
+            f"and use the --ddc1 and --ddc2 flags")
 
 
 # returns the extracted file output path
@@ -100,7 +103,10 @@ def read_file(file_name: str, path: str = "", default: str = None, as_str: bool 
             try:
                 return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
             except UnicodeDecodeError as e3:
-                raise f"we tried utf-8, utf-16-be and utf-16-le but none of them worked :(\n{e3.reason}"
+                try:
+                    return read_file_with_unicode(file_path, "Windows 1252", default, as_str)
+                except UnicodeDecodeError as e4:
+                    raise Exception(f"we tried Windows 1252, utf-8, utf-16-be and utf-16-le but none of them worked :(\n{e4.reason}")
 
 
 def read_file_with_unicode(file_path: str, encoding: str, default: str = None, as_str: bool = True) -> str | list[str]:
@@ -143,8 +149,20 @@ def read_all_files_recursive(root_path: str, included_extension: list[str], excl
     return results
 
 
-def get_all_file_paths_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> str:
+def is_in_ignored_paths(ignored_paths: list[str], current_path: str) -> bool:
+    for path in ignored_paths:
+        if re.search(path, current_path) is not None:
+            return True
+    return False
+
+
+def get_all_file_paths_recursive(root_path: str, ignored_paths: list[str],
+                                 included_extension: list[str],
+                                 excluded_extensions: list[str]) -> str:
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
+        if is_in_ignored_paths(ignored_paths, current_dir_path):
+            continue
+
         for file_name in current_files:
             if _file_has_extension(file_name, included_extension, excluded_extensions):
                 file_path = str(os.path.join(current_dir_path, file_name))
