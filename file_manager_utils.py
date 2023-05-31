@@ -92,21 +92,16 @@ def decompress(file_name: str, is_git: bool, path: str = "") -> str:
 
 # if path == "" then we expect that file_name is the relative/abs path
 # otherwise it should be the file_name only and path is appended to it
-def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True) -> str | list[str]:
+def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True,
+              encoding_index: int = 0) -> str | list[str]:
+    encodings = ["utf-8", "utf-16", "utf-16-be", "utf-16-le", "Windows 1252"]
     file_path = get_file_path(path, file_name)
+    if encoding_index >= len(encodings):
+        raise Exception("could not open file with expected encodings")
     try:
-        return read_file_with_unicode(file_path, "utf-8", default, as_str)
-    except UnicodeDecodeError as e1:
-        try:
-            return read_file_with_unicode(file_path, "utf-16-be", default, as_str)
-        except UnicodeDecodeError as e2:
-            try:
-                return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
-            except UnicodeDecodeError as e3:
-                try:
-                    return read_file_with_unicode(file_path, "Windows 1252", default, as_str)
-                except UnicodeDecodeError as e4:
-                    raise Exception(f"we tried Windows 1252, utf-8, utf-16-be and utf-16-le but none of them worked :(\n{e4.reason}")
+        return read_file_with_unicode(file_path, encodings[encoding_index], default, as_str)
+    except (UnicodeDecodeError, UnicodeError) as ex:
+        return read_file(file_name, path, default, as_str, encoding_index + 1)
 
 
 def read_file_with_unicode(file_path: str, encoding: str, default: str = None, as_str: bool = True) -> str | list[str]:
@@ -116,7 +111,7 @@ def read_file_with_unicode(file_path: str, encoding: str, default: str = None, a
     except FileNotFoundError as e:
         if default is not None:
             return default
-        raise e
+        raise
 
 
 @dataclasses.dataclass
@@ -137,8 +132,7 @@ def _file_has_extension(file_name: str, included_extensions: list[str], excluded
     return False
 
 
-def read_all_files_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> list[
-    Result]:
+def read_all_files_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> list[Result]:
     results = []
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
         for file_name in current_files:
@@ -156,10 +150,12 @@ def is_in_ignored_paths(ignored_paths: list[str], current_path: str) -> bool:
     return False
 
 
-def get_all_file_paths_recursive(root_path: str, ignored_paths: list[str],
+def get_all_file_paths_recursive(root_path: str,
+                                 ignored_paths: list[str],
                                  included_extension: list[str],
                                  excluded_extensions: list[str]) -> str:
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
+
         if is_in_ignored_paths(ignored_paths, current_dir_path):
             continue
 
