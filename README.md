@@ -8,6 +8,7 @@ generates an html diff like winmerge->generate patch/diff for two .zip/foldera t
 <code>python diff_generator.py --c1 "path_to_file1.zip" --c2 "path_to_file2.zip"</code>
 
 c1 is considered the old commit and c2 is considered the new commit
+c2 commit tree must include every commit that c1 has.
 
 <h1>
     how to install

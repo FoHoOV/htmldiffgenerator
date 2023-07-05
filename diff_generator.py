@@ -1,5 +1,7 @@
 import argparse
+import json
 
+import file_manager_utils
 from file_manager_utils import decompress
 from html_patch_generator import generate_html_diff_folders
 
@@ -9,13 +11,15 @@ def generate_diffs():
     parser.add_argument("--jc", type=bool, default=True, help="Produce a context format diff (default = True)")
     parser.add_argument("--cl", default=5, help="How many context lines you want to be included (default = 5)")
     parser.add_argument("--ex",
-                        type=list[str],
-                        help='extensions that we search for(use "*" for all extensions the default) default = [".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj"]',
-                        default=[".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj"])
+                        nargs='*',
+                        help='extensions that we search for(use "*" for all extensions) default = [".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj",".config"]',
+                        default=[".aspx", ".ascx", ".html", "htm", ".py", ".vb", ".cs", ".sln", ".vbproj", ".csproj",
+                                 ".config", ".css", ".ts", ".js", ".xml"])
     parser.add_argument("--eex",
-                        type=list[str],
+                        nargs='*',
                         help='extensions that we dont search for (default = [".designer.vb", ".designer.cs", ".dll", ".pdb"])',
-                        default=[".designer.vb", ".designer.cs", ".dll", ".pdb"])
+                        default=[".designer.vb", ".designer.cs", ".dll", ".pdb", ".pdf", ".xlsx", ".xls", "doc",
+                                 "docx"])
     parser.add_argument("--c1",
                         type=str,
                         required=True,
@@ -49,6 +53,11 @@ def generate_diffs():
                         default=False,
                         help="enable this flag if the downloaded zips come from github(we default to azure file structure)")
 
+    parser.add_argument("--ignored-paths",
+                        default=[],
+                        nargs='*',
+                        help="path to a file that contains a list of paths we try to match with regex inorder to ignore that path")
+
     options = parser.parse_args()
 
     if options.c1.endswith(".zip") and options.ddc1:
@@ -64,7 +73,14 @@ def generate_diffs():
     path_c1 = decompress(options.c1, options.git) if not options.ddc1 else options.c1
     path_c2 = decompress(options.c2, options.git) if not options.ddc2 else options.c2
 
-    generate_html_diff_folders(path_c1, path_c2, options.ex, options.eex, options.output, options.jc, options.cl,
+    generate_html_diff_folders(path_c1,
+                               path_c2,
+                               options.ignored_paths,
+                               options.ex,
+                               options.eex,
+                               options.output,
+                               options.jc,
+                               options.cl,
                                options.ww)
 
 

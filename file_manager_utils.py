@@ -1,5 +1,6 @@
 import dataclasses
 import os
+import re
 import shutil
 import zipfile
 from datetime import datetime
@@ -17,15 +18,25 @@ def get_file_path(path: str, file_name: str, absolute: bool = False) -> str:
     return file_path
 
 
-def write_to_file(content: str, file_name: str, path: str = ""):
+def write_to_file(content: str, file_name: str, path: str = "", retry: bool = True):
     file_path = get_file_path(path, file_name)
     dirname = os.path.dirname(file_path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
     print(f"writing to: {file_path}")
-    with open(file_path, mode="w", encoding="utf-8") as file:
-        file.write(content)
+    try:
+        with open(file_path, mode="w+", encoding="utf-8") as file:
+            file.write(content)
+    except FileNotFoundError as e:
+        print(f"****couldn't write to: {file_path}, error= {str(e)}")
+        if retry:
+            print("retrying--------")
+            write_to_file(content, file_name, path, False)
+        else:
+            print(
+                "if you are using windows read this article: https://docs.python.org/3/using/windows.html#:~:text=Windows%20historically%20has%20limited%20path,expanded%20to%20approximately%2032%2C000%20characters.")
+            print("^^^^^^^^^^^^^^^^^^^^^^^")
 
 
 def generate_output_path(folder1_path: str, folder2_path: str) -> str:
@@ -53,9 +64,10 @@ def move_folder_contents(source_path: str, dest_path: str):
     try:
         os.rmdir(source_path)
     except(FileNotFoundError, OSError) as e:
-        raise f"We tried to move all contents from {source_path} one directory up (might be due to using the --git flag)" \
-              f"but this folder still had some contents after the move. If this error exists just extract the files yourself" \
-              f"and use the --ddc1 and --ddc2 flags"
+        raise Exception(
+            f"We tried to move all contents from {source_path} one directory up (might be due to using the --git flag)" \
+            f"but this folder still had some contents after the move. If this error exists just extract the files yourself" \
+            f"and use the --ddc1 and --ddc2 flags")
 
 
 # returns the extracted file output path
@@ -65,7 +77,8 @@ def decompress(file_name: str, is_git: bool, path: str = "") -> str:
     print(f"extracting: {file_name}")
     file_path = get_file_path(path, file_name)
     extraction_path = file_path.replace(".zip", "")
-    extraction_path = "changesets/extracted-" + extraction_path[extraction_path.rfind("/") + 1:] + "--" + generate_timestamp()
+    extraction_path = "changesets/extracted-" + extraction_path[
+                                                extraction_path.rfind("/") + 1:] + "--" + generate_timestamp()
     dirname = os.path.dirname(extraction_path)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -79,18 +92,16 @@ def decompress(file_name: str, is_git: bool, path: str = "") -> str:
 
 # if path == "" then we expect that file_name is the relative/abs path
 # otherwise it should be the file_name only and path is appended to it
-def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True) -> str | list[str]:
+def read_file(file_name: str, path: str = "", default: str = None, as_str: bool = True,
+              encoding_index: int = 0) -> str | list[str]:
+    encodings = ["utf-8", "utf-16", "utf-16-be", "utf-16-le", "Windows 1252"]
     file_path = get_file_path(path, file_name)
+    if encoding_index >= len(encodings):
+        raise Exception("could not open file with expected encodings")
     try:
-        return read_file_with_unicode(file_path, "utf-8", default, as_str)
-    except UnicodeDecodeError as e1:
-        try:
-            return read_file_with_unicode(file_path, "utf-16-be", default, as_str)
-        except UnicodeDecodeError as e2:
-            try:
-                return read_file_with_unicode(file_path, "utf-16-le", default, as_str)
-            except UnicodeDecodeError as e3:
-                raise f"we tried utf-8, utf-16-be and utf-16-le but none of them worked :(\n{e3.reason}"
+        return read_file_with_unicode(file_path, encodings[encoding_index], default, as_str)
+    except (UnicodeDecodeError, UnicodeError) as ex:
+        return read_file(file_name, path, default, as_str, encoding_index + 1)
 
 
 def read_file_with_unicode(file_path: str, encoding: str, default: str = None, as_str: bool = True) -> str | list[str]:
@@ -100,7 +111,7 @@ def read_file_with_unicode(file_path: str, encoding: str, default: str = None, a
     except FileNotFoundError as e:
         if default is not None:
             return default
-        raise e
+        raise
 
 
 @dataclasses.dataclass
@@ -121,8 +132,7 @@ def _file_has_extension(file_name: str, included_extensions: list[str], excluded
     return False
 
 
-def read_all_files_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> list[
-    Result]:
+def read_all_files_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> list[Result]:
     results = []
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
         for file_name in current_files:
@@ -133,8 +143,22 @@ def read_all_files_recursive(root_path: str, included_extension: list[str], excl
     return results
 
 
-def get_all_file_paths_recursive(root_path: str, included_extension: list[str], excluded_extensions: list[str]) -> str:
+def is_in_ignored_paths(ignored_paths: list[str], current_path: str) -> bool:
+    for path in ignored_paths:
+        if re.search(path, current_path) is not None:
+            return True
+    return False
+
+
+def get_all_file_paths_recursive(root_path: str,
+                                 ignored_paths: list[str],
+                                 included_extension: list[str],
+                                 excluded_extensions: list[str]) -> str:
     for current_dir_path, current_subdirs, current_files in os.walk(root_path):
+
+        if is_in_ignored_paths(ignored_paths, current_dir_path):
+            continue
+
         for file_name in current_files:
             if _file_has_extension(file_name, included_extension, excluded_extensions):
                 file_path = str(os.path.join(current_dir_path, file_name))
